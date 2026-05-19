@@ -3,6 +3,7 @@ import { computeResult } from '@/lib/quiz';
 import { Answer } from '@/types/index';
 import { Download, Link, RotateCcw, Check } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import PixelHeaderArt from '@/components/PixelHeaderArt';
 
 type ResultScreenProps = {
   answers: Answer[];
@@ -11,9 +12,9 @@ type ResultScreenProps = {
 
 export default function ResultScreen({ answers, onRestart }: ResultScreenProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
-  const [copied, setCopied] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(false);
   const result = computeResult(answers);
 
   useEffect(() => {
@@ -26,27 +27,28 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const receiptNo = `#${Math.floor(Math.random() * 90000 + 10000)}`;
 
-  async function handleSaveImage() {
+  async function handleSaveImage(): Promise<void> {
     if (!receiptRef.current) return;
     setSaving(true);
     try {
       const canvas = await html2canvas(receiptRef.current, {
-        backgroundColor: '#fafaf8',
+        backgroundColor: '#f4ecd8',
         scale: 2,
         useCORS: true,
         logging: false,
       });
       const link = document.createElement('a');
-      link.download = 'my-dopamine-receipt.png';
+      link.download = 'brain-rot-survivors-log.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-    } catch (e: any) {
-      console.error('Save failed', e.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'unknown';
+      console.error('Save failed', msg);
     }
     setSaving(false);
   }
 
-  function handleCopyLink() {
+  function handleCopyLink(): void {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
@@ -57,32 +59,30 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
     });
   }
 
+  // Larger, denser barcode for prominent footer
   const barcodeBars: number[] = [];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 72; i++) {
     barcodeBars.push(Math.random() > 0.5 ? 1 : 0);
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-start py-16 px-4"
-      style={{ backgroundColor: '#f5f2eb' }}
-    >
+    <div className="parchment-bg min-h-screen flex flex-col items-center justify-start py-10 px-4 relative">
       <div className="noise-overlay" />
 
       {/* Header label */}
       <div
-        className={`flex items-center gap-3 mb-8 transition-all duration-700 ${
+        className={`flex items-center gap-3 mb-6 transition-all duration-700 ${
           visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}
       >
         <div style={{ height: 1, width: 40, backgroundColor: '#1a1a1a' }} />
-        <span className="font-receipt text-xs tracking-widest" style={{ color: '#1a1a1a' }}>
-          YOUR RECEIPT IS READY
+        <span className="font-pixel-soft text-[10px] tracking-widest" style={{ color: '#1a1a1a' }}>
+          SURVIVOR'S LOG // READY
         </span>
         <div style={{ height: 1, width: 40, backgroundColor: '#1a1a1a' }} />
       </div>
 
-      {/* Receipt Container */}
+      {/* Receipt Container - sized for mobile share (9:16 friendly, max-w-sm = 384px) */}
       <div
         className={`w-full max-w-sm transition-all duration-700 delay-100 ${
           visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
@@ -93,36 +93,66 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
           <div className="receipt-zigzag-top" />
 
           {/* Receipt paper */}
-          <div className="receipt-paper px-6 pt-6 pb-5" style={{ backgroundColor: '#fafaf8' }}>
-            {/* Store name */}
+          <div className="receipt-paper px-6 pt-6 pb-5">
+            {/* === Pixel-art header === */}
+            <div className="flex justify-center mb-3">
+              <div style={{ width: '85%' }}>
+                <PixelHeaderArt />
+              </div>
+            </div>
+
+            {/* Stylized title */}
             <div className="text-center mb-4">
-              <p className="font-receipt text-xs tracking-widest mb-1" style={{ color: '#6b6b6b' }}>
-                ★ DOPAMINE MART ★
-              </p>
-              <h2
-                className="font-receipt tracking-widest"
-                style={{ fontSize: '18px', color: '#1a1a1a', fontWeight: 'bold' }}
+              <h1
+                className="font-pixel"
+                style={{
+                  fontSize: '14px',
+                  color: '#1a1a1a',
+                  lineHeight: 1.35,
+                  textShadow: '1px 1px 0 rgba(120,90,50,0.25)',
+                }}
               >
-                COUCH-POTATO RECEIPT
-              </h2>
-              <p className="font-receipt text-xs mt-1" style={{ color: '#6b6b6b' }}>
-                Est. When Netflix Invented Autoplay
+                BRAIN-ROT<br />APOCALYPSE
+              </h1>
+              <div
+                className="font-pixel-soft mt-2"
+                style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.08em' }}
+              >
+                :: SURVIVOR'S LOG ::
+              </div>
+              <p className="font-receipt text-[11px] mt-2" style={{ color: '#6b6b6b' }}>
+                Filed under: Chronic Online Behavior
               </p>
             </div>
 
             {/* Meta info */}
             <div
               className="font-receipt text-xs mb-4 py-3"
-              style={{ borderTop: '1px dashed #aaa', borderBottom: '1px dashed #aaa', color: '#6b6b6b' }}
+              style={{ borderTop: '1px dashed #8a7a5c', borderBottom: '1px dashed #8a7a5c', color: '#6b6b6b' }}
             >
               <div className="flex justify-between">
                 <span>DATE: {dateStr}</span>
                 <span>TIME: {timeStr}</span>
               </div>
               <div className="flex justify-between mt-1">
-                <span>RECEIPT {receiptNo}</span>
+                <span>LOG {receiptNo}</span>
                 <span>CASHIER: ALGORITHM</span>
               </div>
+            </div>
+
+            {/* Inventory section title - pixel font */}
+            <div className="text-center mb-3">
+              <h2
+                className="font-pixel"
+                style={{
+                  fontSize: '10px',
+                  color: '#1a1a1a',
+                  letterSpacing: '0.05em',
+                  textShadow: '1px 1px 0 rgba(120,90,50,0.2)',
+                }}
+              >
+                PERSONALITY INVENTORY
+              </h2>
             </div>
 
             {/* Column headers */}
@@ -138,7 +168,7 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
             {/* Divider */}
             <div
               className="font-receipt text-xs mb-3"
-              style={{ color: '#aaa', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
+              style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
             >
               {'- '.repeat(30)}
             </div>
@@ -164,7 +194,7 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
             {/* Divider */}
             <div
               className="font-receipt text-xs mb-3"
-              style={{ color: '#aaa', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
+              style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
             >
               {'= '.repeat(30)}
             </div>
@@ -187,62 +217,102 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
 
             {/* Total / Personality type */}
             <div
-              className="py-3 px-1 mb-4"
+              className="py-4 px-2 mb-4"
               style={{ backgroundColor: '#1a1a1a' }}
             >
-              <div className="font-receipt text-xs text-center mb-1" style={{ color: '#c9a96e' }}>
-                PERSONALITY TYPE:
+              <div className="font-pixel-soft text-[10px] text-center mb-1" style={{ color: '#c9a96e', letterSpacing: '0.12em' }}>
+                :: PERSONALITY TYPE ::
               </div>
               <div
-                className="font-receipt text-center"
-                style={{ fontSize: '16px', color: '#fafaf8', letterSpacing: '0.08em', fontWeight: 'bold' }}
+                className="font-pixel text-center"
+                style={{ fontSize: '13px', color: '#f4ecd8', letterSpacing: '0.06em', lineHeight: 1.4 }}
               >
                 {result.type}
               </div>
-              <div className="font-receipt text-xs text-center mt-1" style={{ color: '#aaa' }}>
+              <div className="font-receipt text-[11px] text-center mt-2" style={{ color: '#aaa' }}>
                 {result.tagline}
               </div>
             </div>
 
             {/* Status */}
             <div
-              className="font-receipt text-xs text-center mb-4 py-2"
+              className="font-receipt text-xs text-center mb-5 py-2"
               style={{ border: '1px solid #1a1a1a', color: '#1a1a1a', letterSpacing: '0.1em' }}
             >
               OVERALL STATUS: {result.total}
             </div>
 
+            {/* ============ BIG PROMINENT FOOTER ============ */}
             {/* Divider */}
             <div
               className="font-receipt text-xs mb-4"
-              style={{ color: '#aaa', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
+              style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
             >
-              {'- '.repeat(30)}
+              {'* '.repeat(30)}
             </div>
 
-            {/* Footer messages */}
-            <div className="font-receipt text-xs text-center mb-5" style={{ color: '#6b6b6b' }}>
-              <p>Thank you for your dysfunction!</p>
-              <p className="mt-1">Please come again (you will).</p>
-              <p className="mt-1" style={{ color: '#c9a96e' }}>★ SHARE FOR 10% OFF YOUR NEXT SPIRAL ★</p>
+            {/* THANK YOU - large pixel font */}
+            <div className="text-center mb-3">
+              <div
+                className="font-pixel"
+                style={{
+                  fontSize: '20px',
+                  color: '#1a1a1a',
+                  letterSpacing: '0.08em',
+                  textShadow: '2px 2px 0 rgba(120,90,50,0.3)',
+                }}
+              >
+                THANK YOU
+              </div>
+              <div
+                className="font-pixel-soft mt-2"
+                style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.1em' }}
+              >
+                FOR YOUR DYSFUNCTION
+              </div>
             </div>
 
-            {/* Barcode */}
-            <div className="flex flex-col items-center mb-2">
-              <div className="flex items-end gap-px mb-1">
+            {/* Share CTA */}
+            <div className="text-center mb-4 py-3 px-2" style={{ border: '1.5px dashed #1a1a1a' }}>
+              <p
+                className="font-pixel-soft"
+                style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.08em', lineHeight: 1.5 }}
+              >
+                ★ SHARE FOR 10% OFF<br />YOUR NEXT SPIRAL ★
+              </p>
+              <p
+                className="font-receipt text-[10px] mt-2"
+                style={{ color: '#6b6b6b', letterSpacing: '0.05em' }}
+              >
+                (ADDITIONAL 5% FOR TIKTOK SHARE)
+              </p>
+            </div>
+
+            {/* BIG Barcode */}
+            <div className="flex flex-col items-center mb-1 mt-2">
+              <div className="flex items-end gap-px mb-2">
                 {barcodeBars.map((thick, i) => (
                   <div
                     key={i}
                     style={{
-                      width: thick ? 3 : 1,
-                      height: i % 7 === 0 ? 42 : i % 3 === 0 ? 36 : 28,
+                      width: thick ? 4 : 2,
+                      height: i % 7 === 0 ? 72 : i % 3 === 0 ? 60 : 48,
                       backgroundColor: '#1a1a1a',
                     }}
                   />
                 ))}
               </div>
-              <p className="font-receipt text-xs tracking-widest" style={{ color: '#1a1a1a', fontSize: '9px' }}>
-                {receiptNo} DOPAMINE-MART 2025
+              <p
+                className="font-receipt tracking-widest"
+                style={{ color: '#1a1a1a', fontSize: '11px', letterSpacing: '0.15em' }}
+              >
+                {receiptNo} :: BRAIN-ROT-MART :: 2025
+              </p>
+              <p
+                className="font-pixel-soft mt-1"
+                style={{ color: '#1a1a1a', fontSize: '9px', letterSpacing: '0.2em' }}
+              >
+                — END OF LOG —
               </p>
             </div>
           </div>
@@ -298,7 +368,7 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
         className={`font-receipt text-xs text-center mt-8 transition-all duration-700 delay-500 ${
           visible ? 'opacity-100' : 'opacity-0'
         }`}
-        style={{ color: '#aaa', maxWidth: 280 }}
+        style={{ color: '#8a7a5c', maxWidth: 280 }}
       >
         results are 100% accurate. no refunds. no therapy. just vibes.
       </p>
