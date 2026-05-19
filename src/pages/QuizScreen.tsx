@@ -15,7 +15,7 @@ export default function QuizScreen({ onComplete }: QuizScreenProps) {
   const [visible, setVisible] = useState(false);
 
   const question = QUESTIONS[currentIdx];
-  const progress = ((currentIdx) / QUESTIONS.length) * 100;
+  const progress = (currentIdx / QUESTIONS.length) * 100;
 
   useEffect(() => {
     setVisible(false);
@@ -73,13 +73,14 @@ export default function QuizScreen({ onComplete }: QuizScreenProps) {
           />
         </div>
 
-        {/* Step dots */}
-        <div className="flex gap-2 mt-3 justify-center">
+        {/* Step dots — scrollable row so all 12 fit */}
+        <div className="flex gap-1.5 mt-3 justify-center overflow-x-auto pb-1">
           {QUESTIONS.map((_, i) => (
             <div
               key={i}
               style={{
-                width: i === currentIdx ? 20 : 6,
+                flexShrink: 0,
+                width: i === currentIdx ? 18 : 6,
                 height: 6,
                 backgroundColor: i < currentIdx ? '#c9a96e' : i === currentIdx ? '#1a1a1a' : '#d4d0c8',
                 transition: 'all 0.3s ease',

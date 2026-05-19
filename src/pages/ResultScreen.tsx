@@ -30,8 +30,6 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
   const receiptNo = `#${Math.floor(Math.random() * 90000 + 10000)}`;
 
   async function handleSaveImage(): Promise<void> {
-    // Capture the full composition (receipt + audit dashboard) so the saved
-    // image is the maximally shareable, "complete audit" artifact.
     const target = compositionRef.current ?? receiptRef.current;
     if (!target) return;
     setSaving(true);
@@ -64,7 +62,6 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
     });
   }
 
-  // Larger, denser barcode for prominent footer
   const barcodeBars: number[] = [];
   for (let i = 0; i < 72; i++) {
     barcodeBars.push(Math.random() > 0.5 ? 1 : 0);
@@ -149,7 +146,7 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
                   </div>
                 </div>
 
-                {/* Inventory section title - pixel font */}
+                {/* Inventory section title */}
                 <div className="text-center mb-3">
                   <h2
                     className="font-pixel"
@@ -170,8 +167,8 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
                   style={{ color: '#1a1a1a', fontWeight: 'bold', letterSpacing: '0.05em' }}
                 >
                   <span style={{ flex: 1 }}>ITEM</span>
-                  <span style={{ width: 32, textAlign: 'center' }}>QTY</span>
-                  <span style={{ width: 72, textAlign: 'right' }}>SCORE</span>
+                  <span style={{ width: 36, textAlign: 'center' }}>QTY</span>
+                  <span style={{ width: 80, textAlign: 'right' }}>SCORE</span>
                 </div>
 
                 {/* Divider */}
@@ -182,17 +179,17 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
                   {'- '.repeat(30)}
                 </div>
 
-                {/* Line items */}
-                <div className="flex flex-col gap-2 mb-3">
+                {/* Line items — all 12 */}
+                <div className="flex flex-col gap-1.5 mb-3">
                   {result.items.map((item, i) => (
                     <div key={i} className="font-receipt text-xs flex items-start">
-                      <div style={{ flex: 1 }}>
-                        <span style={{ marginRight: 4 }}>{item.emoji}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ marginRight: 3 }}>{item.emoji}</span>
                         <span style={{ color: '#1a1a1a' }}>{item.item}</span>
                       </div>
-                      <span style={{ width: 32, textAlign: 'center', color: '#6b6b6b' }}>{item.qty}</span>
+                      <span style={{ width: 36, textAlign: 'center', color: '#6b6b6b', flexShrink: 0 }}>{item.qty}</span>
                       <span
-                        style={{ width: 72, textAlign: 'right', color: '#1a1a1a', fontWeight: 'bold' }}
+                        style={{ width: 80, textAlign: 'right', color: '#1a1a1a', fontWeight: 'bold', flexShrink: 0 }}
                       >
                         {item.price}
                       </span>
@@ -222,9 +219,13 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
                     <span>SEROTONIN TAX:</span>
                     <span style={{ color: '#1a1a1a' }}>+∞</span>
                   </div>
+                  <div className="flex justify-between mt-1">
+                    <span>SLEEP PENALTY:</span>
+                    <span style={{ color: '#1a1a1a' }}>NON-NEGOTIABLE</span>
+                  </div>
                 </div>
 
-                {/* ===== CENTRAL PERSONALITY TYPE BOX (bolder + larger) ===== */}
+                {/* ===== CENTRAL PERSONALITY TYPE BOX ===== */}
                 <div
                   className="py-5 px-3 mb-4"
                   style={{
@@ -267,7 +268,7 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
                   OVERALL STATUS: {result.total}
                 </div>
 
-                {/* ============ BIG PROMINENT FOOTER ============ */}
+                {/* Footer divider */}
                 <div
                   className="font-receipt text-xs mb-4"
                   style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}

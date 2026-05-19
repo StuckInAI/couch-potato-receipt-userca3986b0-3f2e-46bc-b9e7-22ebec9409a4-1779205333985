@@ -17,8 +17,8 @@ type AuditDashboardProps = {
 
 type BarDatum = {
   label: string;
-  pct: number; // raw, can exceed 100
-  display: string; // what to render (e.g., "127%" or "MAXED OUT")
+  pct: number;
+  display: string;
   maxed: boolean;
 };
 
@@ -33,22 +33,27 @@ function clamp(n: number, min: number, max: number): number {
 }
 
 export default function AuditDashboard({ answers, result }: AuditDashboardProps) {
-  // ---- derive values from answers (1..4 per Q) ----
   const get = (id: number): number => {
     const a = answers.find(x => x.questionId === id);
     return a ? a.value : 2;
   };
-  const screen = get(1);
-  const text = get(2);
-  const buy = get(3);
-  const sat = get(4);
-  const content = get(5);
-  const totalRaw = screen + text + buy + sat + content;
 
-  // Readyness is intentionally inverted-ish vibe: more rot = higher "apocalypse" stat
-  const apocalypseReady = clamp(Math.round((totalRaw / 20) * 95) + 5, 12, 99);
+  const screen    = get(1);
+  const text      = get(2);
+  const buy       = get(3);
+  const sat       = get(4);
+  const content   = get(5);
+  const nostalgia = get(6);
+  const doom      = get(7);
+  const notifs    = get(8);
+  const cart      = get(9);
+  const lofi      = get(10);
+  const sleep     = get(11);
+  const meta      = get(12);
 
-  // ---- Bar chart data (some MAXED OUT, some >100%) ----
+  const totalRaw = screen + text + buy + sat + content + nostalgia + doom + notifs + cart + lofi + sleep + meta;
+  const apocalypseReady = clamp(Math.round((totalRaw / 48) * 95) + 5, 12, 99);
+
   const bars: BarDatum[] = [
     {
       label: 'DOOM-SCROLL',
@@ -63,10 +68,22 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
       maxed: 35 + text * 22 >= 100,
     },
     {
+      label: 'NOSTALGIA',
+      pct: 30 + nostalgia * 24,
+      display: 30 + nostalgia * 24 >= 100 ? 'MAXED OUT' : `${30 + nostalgia * 24}%`,
+      maxed: 30 + nostalgia * 24 >= 100,
+    },
+    {
       label: 'CART ABUSE',
       pct: 40 + buy * 20,
       display: 40 + buy * 20 >= 100 ? 'MAXED OUT' : `${40 + buy * 20}%`,
       maxed: 40 + buy * 20 >= 100,
+    },
+    {
+      label: 'SLEEP DEBT',
+      pct: 35 + sleep * 23,
+      display: 35 + sleep * 23 >= 100 ? 'MAXED OUT' : `${35 + sleep * 23}%`,
+      maxed: 35 + sleep * 23 >= 100,
     },
     {
       label: 'COUCH LOCK',
@@ -75,14 +92,14 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
       maxed: 30 + sat * 25 >= 100,
     },
     {
-      label: 'TAB CHAOS',
-      pct: 50 + content * 19,
-      display: `${50 + content * 19}%`,
-      maxed: 50 + content * 19 >= 100,
+      label: 'LO-FI LOOP',
+      pct: 40 + lofi * 21,
+      display: 40 + lofi * 21 >= 100 ? 'MAXED OUT' : `${40 + lofi * 21}%`,
+      maxed: 40 + lofi * 21 >= 100,
     },
     {
       label: 'VIBE DEBT',
-      pct: 75 + Math.round(totalRaw * 1.3),
+      pct: 75 + Math.round(totalRaw * 0.8),
       display: 'MAXED OUT',
       maxed: true,
     },
@@ -90,28 +107,25 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
 
   const maxScale = Math.max(...bars.map(b => Math.min(b.pct, 140)), 100);
 
-  // ---- 12 audit tiles ----
   const tiles: AuditTile[] = [
-    { label: 'SCROLL',  pass: screen <= 2,  icon: 'phone' },
-    { label: 'REPLY',   pass: text <= 2,    icon: 'ghost' },
-    { label: 'SPEND',   pass: buy <= 2,     icon: 'wallet' },
-    { label: 'REST',    pass: sat <= 2,     icon: 'bed' },
-    { label: 'FOCUS',   pass: content <= 2, icon: 'tabs' },
-    { label: 'SLEEP',   pass: sat <= 3,     icon: 'clock' },
-    { label: 'CAFFEINE',pass: false,        icon: 'coffee' },
-    { label: 'COUCH',   pass: sat <= 2,     icon: 'couch' },
-    { label: 'CART',    pass: buy <= 1,     icon: 'cart' },
-    { label: 'EYES',    pass: screen <= 3,  icon: 'eye' },
-    { label: 'MEDS',    pass: false,        icon: 'pill' },
-    { label: 'SOUL',    pass: totalRaw <= 10, icon: 'skull' },
+    { label: 'SCROLL',    pass: screen <= 2,              icon: 'phone'  },
+    { label: 'REPLY',     pass: text <= 2,                icon: 'ghost'  },
+    { label: 'SPEND',     pass: buy <= 2,                 icon: 'wallet' },
+    { label: 'REST',      pass: sat <= 2,                 icon: 'bed'    },
+    { label: 'FOCUS',     pass: content <= 2,             icon: 'tabs'   },
+    { label: 'NOSTALGIA', pass: nostalgia <= 2,           icon: 'clock'  },
+    { label: 'DOOM-SCR',  pass: doom <= 2,                icon: 'eye'    },
+    { label: 'NOTIFS',    pass: notifs <= 2,              icon: 'pill'   },
+    { label: 'CART',      pass: cart <= 1,                icon: 'cart'   },
+    { label: 'LO-FI',     pass: lofi <= 2,                icon: 'coffee' },
+    { label: 'SLEEP',     pass: sleep <= 2,               icon: 'couch'  },
+    { label: 'SOUL',      pass: totalRaw <= 24,           icon: 'skull'  },
   ];
 
-  // ---- circular gauge geometry ----
   const gaugeSize = 168;
   const gaugeStroke = 14;
   const gaugeR = (gaugeSize - gaugeStroke) / 2;
   const gaugeCirc = 2 * Math.PI * gaugeR;
-  // 3/4 arc for that "meter" look
   const arcFraction = 0.78;
   const visibleLen = gaugeCirc * arcFraction;
   const filled = visibleLen * (apocalypseReady / 100);
@@ -133,53 +147,50 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
         </p>
 
         {/* 3D bars */}
-        <div className="flex items-end justify-between gap-2" style={{ height: 180 }}>
+        <div className="flex items-end justify-between gap-1" style={{ height: 180 }}>
           {bars.map((b, i) => {
             const h = clamp((Math.min(b.pct, 140) / maxScale) * 150, 12, 160);
             const isTop = i === bars.length - 1 || b.maxed;
             return (
               <div key={i} className="flex flex-col items-center flex-1" style={{ minWidth: 0 }}>
-                {/* number on top */}
                 <div
                   className="font-pixel-soft mb-1"
                   style={{
-                    fontSize: 9,
-                    color: isTop ? '#1a1a1a' : '#1a1a1a',
-                    letterSpacing: '0.04em',
+                    fontSize: 8,
+                    color: '#1a1a1a',
+                    letterSpacing: '0.02em',
                     whiteSpace: 'nowrap',
+                    writingMode: b.display.length > 5 ? 'vertical-rl' : 'horizontal-tb',
+                    textOrientation: 'mixed',
                   }}
                 >
                   {b.display}
                 </div>
-                {/* 3D bar */}
                 <div className="relative" style={{ width: '78%', height: h }}>
-                  {/* side face (depth) */}
                   <div
                     style={{
                       position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      width: 6,
+                      top: -5,
+                      right: -5,
+                      width: 5,
                       height: h,
                       background: isTop ? '#1a1a1a' : '#8a7a5c',
                       transform: 'skewY(-45deg)',
                       transformOrigin: 'bottom left',
                     }}
                   />
-                  {/* top face (depth) */}
                   <div
                     style={{
                       position: 'absolute',
-                      top: -6,
-                      left: 6,
+                      top: -5,
+                      left: 5,
                       width: '100%',
-                      height: 6,
+                      height: 5,
                       background: isTop ? '#2a2a2a' : '#a99572',
                       transform: 'skewX(-45deg)',
                       transformOrigin: 'bottom left',
                     }}
                   />
-                  {/* front face */}
                   <div
                     style={{
                       position: 'absolute',
@@ -191,10 +202,9 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
                     }}
                   />
                 </div>
-                {/* label */}
                 <div
                   className="font-receipt mt-2 text-center"
-                  style={{ fontSize: 8.5, color: '#1a1a1a', letterSpacing: '0.04em', lineHeight: 1.1 }}
+                  style={{ fontSize: 7.5, color: '#1a1a1a', letterSpacing: '0.02em', lineHeight: 1.1 }}
                 >
                   {b.label}
                 </div>
@@ -203,7 +213,6 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
           })}
         </div>
 
-        {/* axis line */}
         <div className="mt-1" style={{ borderTop: '1.5px solid #1a1a1a' }} />
         <div className="flex justify-between mt-1">
           <span className="font-receipt" style={{ fontSize: 8, color: '#8a7a5c' }}>0%</span>
@@ -226,9 +235,7 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
 
         <div className="relative" style={{ width: gaugeSize, height: gaugeSize }}>
           <svg width={gaugeSize} height={gaugeSize} viewBox={`0 0 ${gaugeSize} ${gaugeSize}`}>
-            {/* rotate so gap is at bottom */}
             <g transform={`rotate(135 ${gaugeSize / 2} ${gaugeSize / 2})`}>
-              {/* track */}
               <circle
                 cx={gaugeSize / 2}
                 cy={gaugeSize / 2}
@@ -238,7 +245,6 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
                 strokeWidth={gaugeStroke}
                 strokeDasharray={`${visibleLen} ${gaugeCirc}`}
               />
-              {/* fill */}
               <circle
                 cx={gaugeSize / 2}
                 cy={gaugeSize / 2}
@@ -249,7 +255,6 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
                 strokeDasharray={`${filled} ${gaugeCirc}`}
                 strokeLinecap="butt"
               />
-              {/* tick marks */}
               {Array.from({ length: 9 }).map((_, i) => {
                 const t = i / 8;
                 const angle = t * arcFraction * 2 * Math.PI;
@@ -265,7 +270,6 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
               })}
             </g>
           </svg>
-          {/* center label */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div
               className="font-pixel"
@@ -308,7 +312,7 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
           itemized health-check, all subsystems
         </p>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {tiles.map((t, i) => (
             <div
               key={i}
@@ -316,19 +320,16 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
               style={{
                 border: '1.5px solid #1a1a1a',
                 background: t.pass ? 'rgba(201,169,110,0.18)' : 'rgba(26,26,26,0.06)',
-                position: 'relative',
               }}
             >
               <AuditIcon kind={t.icon} />
-              {/* status badge */}
               <div
                 className="font-pixel-soft mt-1"
                 style={{
-                  fontSize: 8,
-                  letterSpacing: '0.08em',
+                  fontSize: 7.5,
+                  letterSpacing: '0.06em',
                   background: t.pass ? '#c9a96e' : '#1a1a1a',
-                  padding: '1px 4px',
-                  borderRadius: 0,
+                  padding: '1px 3px',
                 }}
               >
                 <span style={{ color: t.pass ? '#1a1a1a' : '#f4ecd8' }}>
@@ -336,8 +337,8 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
                 </span>
               </div>
               <div
-                className="font-receipt mt-1"
-                style={{ fontSize: 8.5, color: '#1a1a1a', letterSpacing: '0.05em' }}
+                className="font-receipt mt-1 text-center"
+                style={{ fontSize: 7.5, color: '#1a1a1a', letterSpacing: '0.04em' }}
               >
                 {t.label}
               </div>
@@ -368,8 +369,8 @@ function AuditIcon({ kind }: { kind: AuditTile['icon'] }) {
   return (
     <svg
       viewBox="0 0 16 16"
-      width="40"
-      height="40"
+      width="36"
+      height="36"
       shapeRendering="crispEdges"
       style={{ imageRendering: 'pixelated' }}
     >
@@ -509,7 +510,7 @@ function IconPaths({ kind }: { kind: AuditTile['icon'] }) {
     case 'pill':
       return (
         <g>
-          <rect x="2" y="5" width="12" height="6" fill={D} transform="rotate(0 8 8)" />
+          <rect x="2" y="5" width="12" height="6" fill={D} />
           <rect x="3" y="6" width="5" height="4" fill={L} />
           <rect x="8" y="6" width="5" height="4" fill={A} />
           <rect x="2" y="6" width="1" height="4" fill={D} />
