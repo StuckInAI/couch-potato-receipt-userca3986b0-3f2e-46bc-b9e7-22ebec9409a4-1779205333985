@@ -155,6 +155,40 @@ html, body {
   z-index: 1;
 }
 
+/* === Audit dashboard panels (parchment cards) === */
+.audit-panel {
+  background-color: #f4ecd8;
+  border: 2px solid #1a1a1a;
+  box-shadow: 4px 4px 0 rgba(26,26,26,0.85);
+  position: relative;
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(180, 150, 100, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(140, 110, 70, 0.10) 0%, transparent 55%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(120, 90, 50, 0.025) 0px,
+      rgba(120, 90, 50, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+.audit-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='an'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0 0.15 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23an)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  mix-blend-mode: multiply;
+}
+
+.audit-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Parchment page background */
 .parchment-bg {
   background-color: #e8dfc8;

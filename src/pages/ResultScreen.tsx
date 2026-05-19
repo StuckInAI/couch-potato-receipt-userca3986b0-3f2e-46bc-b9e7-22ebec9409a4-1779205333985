@@ -4,6 +4,7 @@ import { Answer } from '@/types/index';
 import { Download, Link, RotateCcw, Check } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import PixelHeaderArt from '@/components/PixelHeaderArt';
+import AuditDashboard from '@/components/AuditDashboard';
 
 type ResultScreenProps = {
   answers: Answer[];
@@ -12,6 +13,7 @@ type ResultScreenProps = {
 
 export default function ResultScreen({ answers, onRestart }: ResultScreenProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const compositionRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
@@ -28,11 +30,14 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
   const receiptNo = `#${Math.floor(Math.random() * 90000 + 10000)}`;
 
   async function handleSaveImage(): Promise<void> {
-    if (!receiptRef.current) return;
+    // Capture the full composition (receipt + audit dashboard) so the saved
+    // image is the maximally shareable, "complete audit" artifact.
+    const target = compositionRef.current ?? receiptRef.current;
+    if (!target) return;
     setSaving(true);
     try {
-      const canvas = await html2canvas(receiptRef.current, {
-        backgroundColor: '#f4ecd8',
+      const canvas = await html2canvas(target, {
+        backgroundColor: '#e8dfc8',
         scale: 2,
         useCORS: true,
         logging: false,
@@ -82,243 +87,266 @@ export default function ResultScreen({ answers, onRestart }: ResultScreenProps) 
         <div style={{ height: 1, width: 40, backgroundColor: '#1a1a1a' }} />
       </div>
 
-      {/* Receipt Container - sized for mobile share (9:16 friendly, max-w-sm = 384px) */}
+      {/* ============ FULL COMPOSITION (captured for image) ============ */}
       <div
-        className={`w-full max-w-sm transition-all duration-700 delay-100 ${
+        ref={compositionRef}
+        className={`w-full max-w-6xl transition-all duration-700 delay-100 ${
           visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
         }`}
       >
-        <div ref={receiptRef}>
-          {/* Zigzag top */}
-          <div className="receipt-zigzag-top" />
+        <div className="flex flex-col lg:flex-row items-start justify-center gap-8 px-2 py-4">
+          {/* === LEFT: Receipt === */}
+          <div className="w-full max-w-sm mx-auto lg:mx-0">
+            <div ref={receiptRef}>
+              {/* Zigzag top */}
+              <div className="receipt-zigzag-top" />
 
-          {/* Receipt paper */}
-          <div className="receipt-paper px-6 pt-6 pb-5">
-            {/* === Pixel-art header === */}
-            <div className="flex justify-center mb-3">
-              <div style={{ width: '85%' }}>
-                <PixelHeaderArt />
-              </div>
-            </div>
-
-            {/* Stylized title */}
-            <div className="text-center mb-4">
-              <h1
-                className="font-pixel"
-                style={{
-                  fontSize: '14px',
-                  color: '#1a1a1a',
-                  lineHeight: 1.35,
-                  textShadow: '1px 1px 0 rgba(120,90,50,0.25)',
-                }}
-              >
-                BRAIN-ROT<br />APOCALYPSE
-              </h1>
-              <div
-                className="font-pixel-soft mt-2"
-                style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.08em' }}
-              >
-                :: SURVIVOR'S LOG ::
-              </div>
-              <p className="font-receipt text-[11px] mt-2" style={{ color: '#6b6b6b' }}>
-                Filed under: Chronic Online Behavior
-              </p>
-            </div>
-
-            {/* Meta info */}
-            <div
-              className="font-receipt text-xs mb-4 py-3"
-              style={{ borderTop: '1px dashed #8a7a5c', borderBottom: '1px dashed #8a7a5c', color: '#6b6b6b' }}
-            >
-              <div className="flex justify-between">
-                <span>DATE: {dateStr}</span>
-                <span>TIME: {timeStr}</span>
-              </div>
-              <div className="flex justify-between mt-1">
-                <span>LOG {receiptNo}</span>
-                <span>CASHIER: ALGORITHM</span>
-              </div>
-            </div>
-
-            {/* Inventory section title - pixel font */}
-            <div className="text-center mb-3">
-              <h2
-                className="font-pixel"
-                style={{
-                  fontSize: '10px',
-                  color: '#1a1a1a',
-                  letterSpacing: '0.05em',
-                  textShadow: '1px 1px 0 rgba(120,90,50,0.2)',
-                }}
-              >
-                PERSONALITY INVENTORY
-              </h2>
-            </div>
-
-            {/* Column headers */}
-            <div
-              className="font-receipt text-xs flex mb-2"
-              style={{ color: '#1a1a1a', fontWeight: 'bold', letterSpacing: '0.05em' }}
-            >
-              <span style={{ flex: 1 }}>ITEM</span>
-              <span style={{ width: 32, textAlign: 'center' }}>QTY</span>
-              <span style={{ width: 72, textAlign: 'right' }}>SCORE</span>
-            </div>
-
-            {/* Divider */}
-            <div
-              className="font-receipt text-xs mb-3"
-              style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
-            >
-              {'- '.repeat(30)}
-            </div>
-
-            {/* Line items */}
-            <div className="flex flex-col gap-2 mb-3">
-              {result.items.map((item, i) => (
-                <div key={i} className="font-receipt text-xs flex items-start">
-                  <div style={{ flex: 1 }}>
-                    <span style={{ marginRight: 4 }}>{item.emoji}</span>
-                    <span style={{ color: '#1a1a1a' }}>{item.item}</span>
+              {/* Receipt paper */}
+              <div className="receipt-paper px-6 pt-6 pb-5">
+                {/* === Pixel-art header === */}
+                <div className="flex justify-center mb-3">
+                  <div style={{ width: '85%' }}>
+                    <PixelHeaderArt />
                   </div>
-                  <span style={{ width: 32, textAlign: 'center', color: '#6b6b6b' }}>{item.qty}</span>
-                  <span
-                    style={{ width: 72, textAlign: 'right', color: '#1a1a1a', fontWeight: 'bold' }}
-                  >
-                    {item.price}
-                  </span>
                 </div>
-              ))}
-            </div>
 
-            {/* Divider */}
-            <div
-              className="font-receipt text-xs mb-3"
-              style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
-            >
-              {'= '.repeat(30)}
-            </div>
-
-            {/* Subtotals */}
-            <div className="font-receipt text-xs mb-3" style={{ color: '#6b6b6b' }}>
-              <div className="flex justify-between">
-                <span>SUBTOTAL:</span>
-                <span style={{ color: '#1a1a1a' }}>YOUR WHOLE LIFE</span>
-              </div>
-              <div className="flex justify-between mt-1">
-                <span>THERAPY DISCOUNT:</span>
-                <span style={{ color: '#1a1a1a' }}>-$0.00</span>
-              </div>
-              <div className="flex justify-between mt-1">
-                <span>SEROTONIN TAX:</span>
-                <span style={{ color: '#1a1a1a' }}>+∞</span>
-              </div>
-            </div>
-
-            {/* Total / Personality type */}
-            <div
-              className="py-4 px-2 mb-4"
-              style={{ backgroundColor: '#1a1a1a' }}
-            >
-              <div className="font-pixel-soft text-[10px] text-center mb-1" style={{ color: '#c9a96e', letterSpacing: '0.12em' }}>
-                :: PERSONALITY TYPE ::
-              </div>
-              <div
-                className="font-pixel text-center"
-                style={{ fontSize: '13px', color: '#f4ecd8', letterSpacing: '0.06em', lineHeight: 1.4 }}
-              >
-                {result.type}
-              </div>
-              <div className="font-receipt text-[11px] text-center mt-2" style={{ color: '#aaa' }}>
-                {result.tagline}
-              </div>
-            </div>
-
-            {/* Status */}
-            <div
-              className="font-receipt text-xs text-center mb-5 py-2"
-              style={{ border: '1px solid #1a1a1a', color: '#1a1a1a', letterSpacing: '0.1em' }}
-            >
-              OVERALL STATUS: {result.total}
-            </div>
-
-            {/* ============ BIG PROMINENT FOOTER ============ */}
-            {/* Divider */}
-            <div
-              className="font-receipt text-xs mb-4"
-              style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
-            >
-              {'* '.repeat(30)}
-            </div>
-
-            {/* THANK YOU - large pixel font */}
-            <div className="text-center mb-3">
-              <div
-                className="font-pixel"
-                style={{
-                  fontSize: '20px',
-                  color: '#1a1a1a',
-                  letterSpacing: '0.08em',
-                  textShadow: '2px 2px 0 rgba(120,90,50,0.3)',
-                }}
-              >
-                THANK YOU
-              </div>
-              <div
-                className="font-pixel-soft mt-2"
-                style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.1em' }}
-              >
-                FOR YOUR DYSFUNCTION
-              </div>
-            </div>
-
-            {/* Share CTA */}
-            <div className="text-center mb-4 py-3 px-2" style={{ border: '1.5px dashed #1a1a1a' }}>
-              <p
-                className="font-pixel-soft"
-                style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.08em', lineHeight: 1.5 }}
-              >
-                ★ SHARE FOR 10% OFF<br />YOUR NEXT SPIRAL ★
-              </p>
-              <p
-                className="font-receipt text-[10px] mt-2"
-                style={{ color: '#6b6b6b', letterSpacing: '0.05em' }}
-              >
-                (ADDITIONAL 5% FOR TIKTOK SHARE)
-              </p>
-            </div>
-
-            {/* BIG Barcode */}
-            <div className="flex flex-col items-center mb-1 mt-2">
-              <div className="flex items-end gap-px mb-2">
-                {barcodeBars.map((thick, i) => (
-                  <div
-                    key={i}
+                {/* Stylized title */}
+                <div className="text-center mb-4">
+                  <h1
+                    className="font-pixel"
                     style={{
-                      width: thick ? 4 : 2,
-                      height: i % 7 === 0 ? 72 : i % 3 === 0 ? 60 : 48,
-                      backgroundColor: '#1a1a1a',
+                      fontSize: '14px',
+                      color: '#1a1a1a',
+                      lineHeight: 1.35,
+                      textShadow: '1px 1px 0 rgba(120,90,50,0.25)',
                     }}
-                  />
-                ))}
+                  >
+                    BRAIN-ROT<br />APOCALYPSE
+                  </h1>
+                  <div
+                    className="font-pixel-soft mt-2"
+                    style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.08em' }}
+                  >
+                    :: SURVIVOR'S LOG ::
+                  </div>
+                  <p className="font-receipt text-[11px] mt-2" style={{ color: '#6b6b6b' }}>
+                    Filed under: Chronic Online Behavior
+                  </p>
+                </div>
+
+                {/* Meta info */}
+                <div
+                  className="font-receipt text-xs mb-4 py-3"
+                  style={{ borderTop: '1px dashed #8a7a5c', borderBottom: '1px dashed #8a7a5c', color: '#6b6b6b' }}
+                >
+                  <div className="flex justify-between">
+                    <span>DATE: {dateStr}</span>
+                    <span>TIME: {timeStr}</span>
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span>LOG {receiptNo}</span>
+                    <span>CASHIER: ALGORITHM</span>
+                  </div>
+                </div>
+
+                {/* Inventory section title - pixel font */}
+                <div className="text-center mb-3">
+                  <h2
+                    className="font-pixel"
+                    style={{
+                      fontSize: '10px',
+                      color: '#1a1a1a',
+                      letterSpacing: '0.05em',
+                      textShadow: '1px 1px 0 rgba(120,90,50,0.2)',
+                    }}
+                  >
+                    PERSONALITY INVENTORY
+                  </h2>
+                </div>
+
+                {/* Column headers */}
+                <div
+                  className="font-receipt text-xs flex mb-2"
+                  style={{ color: '#1a1a1a', fontWeight: 'bold', letterSpacing: '0.05em' }}
+                >
+                  <span style={{ flex: 1 }}>ITEM</span>
+                  <span style={{ width: 32, textAlign: 'center' }}>QTY</span>
+                  <span style={{ width: 72, textAlign: 'right' }}>SCORE</span>
+                </div>
+
+                {/* Divider */}
+                <div
+                  className="font-receipt text-xs mb-3"
+                  style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                >
+                  {'- '.repeat(30)}
+                </div>
+
+                {/* Line items */}
+                <div className="flex flex-col gap-2 mb-3">
+                  {result.items.map((item, i) => (
+                    <div key={i} className="font-receipt text-xs flex items-start">
+                      <div style={{ flex: 1 }}>
+                        <span style={{ marginRight: 4 }}>{item.emoji}</span>
+                        <span style={{ color: '#1a1a1a' }}>{item.item}</span>
+                      </div>
+                      <span style={{ width: 32, textAlign: 'center', color: '#6b6b6b' }}>{item.qty}</span>
+                      <span
+                        style={{ width: 72, textAlign: 'right', color: '#1a1a1a', fontWeight: 'bold' }}
+                      >
+                        {item.price}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Divider */}
+                <div
+                  className="font-receipt text-xs mb-3"
+                  style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                >
+                  {'= '.repeat(30)}
+                </div>
+
+                {/* Subtotals */}
+                <div className="font-receipt text-xs mb-3" style={{ color: '#6b6b6b' }}>
+                  <div className="flex justify-between">
+                    <span>SUBTOTAL:</span>
+                    <span style={{ color: '#1a1a1a' }}>YOUR WHOLE LIFE</span>
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span>THERAPY DISCOUNT:</span>
+                    <span style={{ color: '#1a1a1a' }}>-$0.00</span>
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span>SEROTONIN TAX:</span>
+                    <span style={{ color: '#1a1a1a' }}>+∞</span>
+                  </div>
+                </div>
+
+                {/* ===== CENTRAL PERSONALITY TYPE BOX (bolder + larger) ===== */}
+                <div
+                  className="py-5 px-3 mb-4"
+                  style={{
+                    backgroundColor: '#1a1a1a',
+                    border: '2px solid #1a1a1a',
+                    boxShadow: '4px 4px 0 rgba(120,90,50,0.45)',
+                  }}
+                >
+                  <div
+                    className="font-pixel-soft text-center mb-2"
+                    style={{ fontSize: '11px', color: '#c9a96e', letterSpacing: '0.18em' }}
+                  >
+                    :: PERSONALITY TYPE ::
+                  </div>
+                  <div
+                    className="font-pixel text-center"
+                    style={{
+                      fontSize: '17px',
+                      color: '#f4ecd8',
+                      letterSpacing: '0.08em',
+                      lineHeight: 1.45,
+                      textShadow: '2px 2px 0 rgba(201,169,110,0.35)',
+                    }}
+                  >
+                    {result.type}
+                  </div>
+                  <div
+                    className="font-receipt text-center mt-3"
+                    style={{ fontSize: '11px', color: '#d9c9a6', letterSpacing: '0.05em' }}
+                  >
+                    {result.tagline}
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div
+                  className="font-receipt text-xs text-center mb-5 py-2"
+                  style={{ border: '1px solid #1a1a1a', color: '#1a1a1a', letterSpacing: '0.1em' }}
+                >
+                  OVERALL STATUS: {result.total}
+                </div>
+
+                {/* ============ BIG PROMINENT FOOTER ============ */}
+                <div
+                  className="font-receipt text-xs mb-4"
+                  style={{ color: '#8a7a5c', letterSpacing: '0.1em', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                >
+                  {'* '.repeat(30)}
+                </div>
+
+                <div className="text-center mb-3">
+                  <div
+                    className="font-pixel"
+                    style={{
+                      fontSize: '20px',
+                      color: '#1a1a1a',
+                      letterSpacing: '0.08em',
+                      textShadow: '2px 2px 0 rgba(120,90,50,0.3)',
+                    }}
+                  >
+                    THANK YOU
+                  </div>
+                  <div
+                    className="font-pixel-soft mt-2"
+                    style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.1em' }}
+                  >
+                    FOR YOUR DYSFUNCTION
+                  </div>
+                </div>
+
+                <div className="text-center mb-4 py-3 px-2" style={{ border: '1.5px dashed #1a1a1a' }}>
+                  <p
+                    className="font-pixel-soft"
+                    style={{ fontSize: '11px', color: '#1a1a1a', letterSpacing: '0.08em', lineHeight: 1.5 }}
+                  >
+                    ★ SHARE FOR 10% OFF<br />YOUR NEXT SPIRAL ★
+                  </p>
+                  <p
+                    className="font-receipt text-[10px] mt-2"
+                    style={{ color: '#6b6b6b', letterSpacing: '0.05em' }}
+                  >
+                    (ADDITIONAL 5% FOR TIKTOK SHARE)
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center mb-1 mt-2">
+                  <div className="flex items-end gap-px mb-2">
+                    {barcodeBars.map((thick, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: thick ? 4 : 2,
+                          height: i % 7 === 0 ? 72 : i % 3 === 0 ? 60 : 48,
+                          backgroundColor: '#1a1a1a',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p
+                    className="font-receipt tracking-widest"
+                    style={{ color: '#1a1a1a', fontSize: '11px', letterSpacing: '0.15em' }}
+                  >
+                    {receiptNo} :: BRAIN-ROT-MART :: 2025
+                  </p>
+                  <p
+                    className="font-pixel-soft mt-1"
+                    style={{ color: '#1a1a1a', fontSize: '9px', letterSpacing: '0.2em' }}
+                  >
+                    — END OF LOG —
+                  </p>
+                </div>
               </div>
-              <p
-                className="font-receipt tracking-widest"
-                style={{ color: '#1a1a1a', fontSize: '11px', letterSpacing: '0.15em' }}
-              >
-                {receiptNo} :: BRAIN-ROT-MART :: 2025
-              </p>
-              <p
-                className="font-pixel-soft mt-1"
-                style={{ color: '#1a1a1a', fontSize: '9px', letterSpacing: '0.2em' }}
-              >
-                — END OF LOG —
-              </p>
+
+              {/* Zigzag bottom */}
+              <div className="receipt-zigzag-bottom" />
             </div>
           </div>
 
-          {/* Zigzag bottom */}
-          <div className="receipt-zigzag-bottom" />
+          {/* === RIGHT: Audit dashboard === */}
+          <div className="w-full max-w-sm mx-auto lg:mx-0 lg:w-[400px]">
+            <AuditDashboard answers={answers} result={result} />
+          </div>
         </div>
       </div>
 
