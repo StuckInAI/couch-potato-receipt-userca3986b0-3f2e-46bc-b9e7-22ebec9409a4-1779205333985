@@ -139,6 +139,13 @@ function calcScore(answers: Answer[]): number {
   return answers.reduce((sum, a) => sum + a.value, 0);
 }
 
+function makeTherapyBar(pct: number): string {
+  const total = 10;
+  const filled = Math.round((pct / 100) * total);
+  const empty = total - filled;
+  return '[' + '■'.repeat(filled) + '□'.repeat(empty) + ']';
+}
+
 export function computeResult(answers: Answer[]): PersonalityResult {
   const score = calcScore(answers);
 
@@ -252,27 +259,53 @@ export function computeResult(answers: Answer[]): PersonalityResult {
     },
   ];
 
+  // Personality type + tagline
   let type = '';
   let tagline = '';
   let total = '';
+  let auditScore = 0;
+  let therapyPct = 0;
 
   if (score <= 18) {
     type = 'THE BALANCED BEAN';
     tagline = 'Somehow thriving. Suspicious but we respect it.';
     total = 'NET POSITIVE';
+    therapyPct = 28;
+    auditScore = score * 1200 + 4500;
   } else if (score <= 28) {
     type = 'THE SOFT GREMLIN';
     tagline = 'Functioning adult by day, chaos goblin by night.';
     total = 'CHAOTIC NEUTRAL';
+    therapyPct = 58;
+    auditScore = score * 1800 + 18000;
   } else if (score <= 36) {
     type = 'THE COUCH CRYPTID';
     tagline = 'Sighted occasionally. Leaves only for snacks.';
     total = 'CHRONICALLY ONLINE';
+    therapyPct = 78;
+    auditScore = score * 2400 + 42000;
   } else {
-    type = 'THE DOPAMINE GOBLIN';
+    type = 'THE SLEEP-DEPRIVED\nECHO-CHAMBER JESTER';
     tagline = 'Running purely on cortisol and TikTok. No notes.';
     total = 'MAXIMUM ROTTING';
+    therapyPct = 95;
+    auditScore = score * 3100 + 75000;
   }
 
-  return { type, tagline, items, total };
+  const therapyBar = makeTherapyBar(therapyPct);
+  const therapyDiscount = therapyPct >= 80 ? '-$0.00 (REASON: HOPELESS)' : therapyPct >= 60 ? '-$12.00 (MINIMAL)' : '-$45.00';
+  const warningTier: 'low' | 'mid' | 'high' | 'critical' =
+    score <= 18 ? 'low' : score <= 28 ? 'mid' : score <= 36 ? 'high' : 'critical';
+
+  return {
+    type,
+    tagline,
+    items,
+    total,
+    auditScore,
+    therapyPct,
+    therapyBar,
+    therapyDiscount,
+    warningTier,
+  };
 }

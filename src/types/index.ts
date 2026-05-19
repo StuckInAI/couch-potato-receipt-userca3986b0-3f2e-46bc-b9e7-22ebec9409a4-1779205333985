@@ -21,9 +21,16 @@ export type ReceiptItem = {
   emoji: string;
 };
 
+export type WarningTier = 'low' | 'mid' | 'high' | 'critical';
+
 export type PersonalityResult = {
   type: string;
   tagline: string;
   items: ReceiptItem[];
   total: string;
+  auditScore: number;
+  therapyPct: number;
+  therapyBar: string;
+  therapyDiscount: string;
+  warningTier: WarningTier;
 };
