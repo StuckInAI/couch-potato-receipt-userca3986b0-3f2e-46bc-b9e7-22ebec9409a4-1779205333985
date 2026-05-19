@@ -325,10 +325,8 @@ export default function AuditDashboard({ answers, result }: AuditDashboardProps)
                 className="font-pixel-soft mt-1"
                 style={{
                   fontSize: 8,
-                  color: t.pass ? '#1a1a1a' : '#1a1a1a',
                   letterSpacing: '0.08em',
                   background: t.pass ? '#c9a96e' : '#1a1a1a',
-                  color2: 'unset',
                   padding: '1px 4px',
                   borderRadius: 0,
                 }}
